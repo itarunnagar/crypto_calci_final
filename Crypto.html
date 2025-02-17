@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Profit & Risk Calculator</title>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            color: #fff;
+        }
+        .container {
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+        }
+        h2 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin: 10px 0 5px;
+            font-weight: bold;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+            font-size: 16px;
+        }
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+
+        button {
+            background-color: #ff7e5f;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.3s;
+            font-size: 16px;
+            color: #fff;
+            width: 100%;
+        }
+        button:hover {
+            background-color: #feb47b;
+        }
+        #result {
+            margin-top: 20px;
+            background-color: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: left;
+        }
+        .result-heading {
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+        .result-item {
+            margin: 8px 0;
+        }
+        .result-item strong {
+            font-weight: normal;
+        }
+    </style>
+    <script>
+        function calculateProfit() {
+            const investedAmount = parseFloat(document.getElementById('invested').value);
+            const leverageValue = parseFloat(document.getElementById('leverage').value);
+            const currentPrice = parseFloat(document.getElementById('price').value);
+            const profitAmount = parseFloat(document.getElementById('profit').value);
+
+            // Validation to prevent negative values and empty fields
+            if (isNaN(investedAmount) || isNaN(leverageValue) || isNaN(currentPrice) || isNaN(profitAmount) || 
+                investedAmount <= 0 || leverageValue <= 0 || currentPrice <= 0 || profitAmount <= 0) {
+                alert("Please enter valid positive values in all fields.");
+                return;
+            }
+
+            // Calculate total amount invested after leveraging
+            const totalAmountInvested = investedAmount * leverageValue;
+
+            // Calculate total quantity purchased
+            const totalQuantity = totalAmountInvested / currentPrice;
+
+            // Calculate CoinDCX fees and GST
+            const coinDcxFees = 0.005 * totalAmountInvested;
+            const gst = coinDcxFees * 0.18;
+            const totalCharges = coinDcxFees + gst;
+
+            // Calculate the price needed to achieve desired profit
+            const totalRequired = totalAmountInvested + totalCharges + profitAmount;
+            const expectedPrice = totalRequired / totalQuantity;
+
+            // Calculate percentage increase needed
+            const percentageIncrease = ((expectedPrice - currentPrice) / currentPrice) * 100;
+
+            // Correct diluted price calculation
+            const dilutedCoinPrice = currentPrice / leverageValue;
+
+            // Assume simple probability based on percentage increase (just for estimation)
+            const probabilityProfit = Math.max(0, 100 - percentageIncrease) / 100;  // Higher increase means lower probability
+            const probabilityDilution = 1 - probabilityProfit;
+
+            // Display the results
+            document.getElementById('result').innerHTML = `
+                <div class="result-heading">Results</div>
+                <div class="result-item">Price to Achieve Profit: <strong>${expectedPrice.toFixed(2)}</strong> (Increase: ${expectedPrice - currentPrice > 0 ? (expectedPrice - currentPrice).toFixed(2) : 0.00})</div>
+                <div class="result-item">Percentage Increase Needed: <strong>${percentageIncrease.toFixed(2)}%</strong></div>
+                <div class="result-item">Diluted Coin Price: <strong>${dilutedCoinPrice.toFixed(2)}</strong> Rs</div>
+                <div class="result-item">Probability of hitting profit price: <strong>${(probabilityProfit * 100).toFixed(2)}%</strong></div>
+                <div class="result-item">Probability of investment dilution: <strong>${(probabilityDilution * 100).toFixed(2)}%</strong></div>`;
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h2>Crypto Profit & Risk Calculator</h2>
+        
+        <label for="invested">Invested Amount (Rs):</label>
+        <input type="number" id="invested" placeholder="Enter invested amount" min="0" />
+
+        <label for="leverage">Leverage Value:</label>
+        <input type="number" id="leverage" placeholder="Enter leverage value" min="0" />
+
+        <label for="price">Current Price (Rs):</label>
+        <input type="number" id="price" placeholder="Enter current coin price" min="0" />
+
+        <label for="profit">Desired Profit (Rs):</label>
+        <input type="number" id="profit" placeholder="Enter desired profit" min="0" />
+
+        <button onclick="calculateProfit()">Calculate</button>
+
+        <div id="result"></div>
+    </div>
+</body>
+</html>
